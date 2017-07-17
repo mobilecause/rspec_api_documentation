@@ -82,6 +82,12 @@ Feature: Generate API Swagger documentation from test examples
         - name: Orders
           description: Order's tag description
       paths:
+        /should_be_hided:
+          hide: true
+        /not_hided:
+          hide: false
+          get:
+            hide: true
         /instructions:
           get:
             description: This description came from config.yml 1
@@ -295,6 +301,8 @@ Feature: Generate API Swagger documentation from test examples
         "application/json"
       ],
       "paths": {
+        "/not_hided": {
+        },
         "/instructions": {
           "get": {
             "tags": [

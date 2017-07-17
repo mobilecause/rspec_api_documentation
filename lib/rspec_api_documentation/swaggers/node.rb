@@ -1,6 +1,8 @@
 module RspecApiDocumentation
   module Swaggers
     class Node
+      attr_accessor :hide
+
       def self.add_setting(name, opts = {})
         class_settings << name
 
@@ -25,7 +27,9 @@ module RspecApiDocumentation
         return unless opts
 
         opts.each do |name, value|
-          if from_opts
+          if name.to_s == 'hide'
+            self.hide = value
+          elsif from_opts
             add_setting name, :value => from_opts === true ? value : from_opts.new(value)
           else
             schema = setting_schema(name)
@@ -75,12 +79,16 @@ module RspecApiDocumentation
       def as_json
         existing_settings.inject({}) do |hash, name|
           value = setting(name)
-          hash[name] =
-            case
-            when value.is_a?(Node) then value.as_json
-            when value.is_a?(Array) && value[0].is_a?(Node) then value.map { |v| v.as_json }
-            else value
-            end unless value.nil?
+          case
+          when value.is_a?(Node)
+            hash[name] = value.as_json unless value.hide
+          when value.is_a?(Array) && value[0].is_a?(Node)
+            tmp = value.select { |v| !v.hide }.map { |v| v.as_json }
+            hash[name] = tmp unless tmp.empty?
+          else
+            hash[name] = value
+          end unless value.nil?
+
           hash
         end
       end
